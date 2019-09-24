@@ -1,7 +1,6 @@
 import csv
 
 from objects.ChildCoverage import ChildCoverage
-from objects.Coverage import Coverage
 from objects.ParentCoverage import ParentCoverage
 
 
@@ -21,43 +20,41 @@ class CoveragesUtil:
 
         for csv_row in csv_reader:
 
+            pc_coverage_code = csv_row["PC_COVERAGE_CODE"]
             parent_coverage_desc = csv_row["OLD_COVERAGE_NAME"]
             child_coverage_desc = csv_row["NEW_COVERAGE_NAME"]
-            line_of_business = csv_row["BUSINESS_LINE"]
-            clazz = csv_row["CLASS"]
-            line = csv_row["LINE"]
             cause = csv_row["CAUSE"]
-            child_coverage = ChildCoverage(clazz, line, child_coverage_desc, [cause])
-            parent_coverage = ParentCoverage(clazz, line, parent_coverage_desc, [child_coverage])
+            child_coverage = ChildCoverage(child_coverage_desc, [cause])
+            parent_coverage = ParentCoverage(pc_coverage_code, parent_coverage_desc, [child_coverage])
 
             # Add this cause to causes list if not exists
             if not any(c == cause for c in causes):
                 causes.append(cause)
 
-            # Add this line_of_business to coverages_object if not exists.
-            if line_of_business not in coverages_object:
-                coverages_object[line_of_business] = [parent_coverage]
+            # Add this pc_coverage_code to coverages_object if not exists.
+            if pc_coverage_code not in coverages_object:
+                coverages_object[pc_coverage_code] = [parent_coverage]
                 continue
 
-            # Add this parent_coverage to coverages_struct line_of_business if not exists.
-            if not any((pc.desc == parent_coverage_desc and pc.clazz == clazz and pc.line == line) for pc in coverages_object[line_of_business]):
-                coverages_object[line_of_business].append(parent_coverage)
+            # Add this parent_coverage to coverages_struct pc_coverage_code if not exists.
+            if not any(pc.coverage_desc == parent_coverage_desc for pc in coverages_object[pc_coverage_code]):
+                coverages_object[pc_coverage_code].append(parent_coverage)
                 continue
 
             # Get list of child_coverages for parent_coverage in coverages_object
-            # line_of_business : parent_coverage.
-            child_coverages = next(pc for pc in coverages_object[line_of_business]
-                                   if pc.desc == parent_coverage_desc).child_coverages
+            # pc_coverage_code : parent_coverage.
+            child_coverages = next(pc for pc in coverages_object[pc_coverage_code]
+                                   if pc.coverage_desc == parent_coverage_desc).child_coverages
 
             # Add the child_coverage to the parent_coverage.child_coverages if not exists.
-            if not any(cc.desc == child_coverage_desc for cc in child_coverages):
-                next(pc for pc in coverages_object[line_of_business]
-                     if pc.desc == parent_coverage_desc).child_coverages.append(child_coverage)
+            if not any(cc.coverage_desc == child_coverage_desc for cc in child_coverages):
+                next(pc for pc in coverages_object[pc_coverage_code]
+                     if pc.coverage_desc == parent_coverage_desc).child_coverages.append(child_coverage)
                 continue
 
             # Get list of causes for child_coverage in coverages_object
             # line_of_business : parent_coverage.child_coverages.
-            child_coverage_causes = next(ccc for ccc in child_coverages if ccc.desc == child_coverage_desc).causes
+            child_coverage_causes = next(ccc for ccc in child_coverages if ccc.coverage_desc == child_coverage_desc).causes
 
             # Add the cause to the child_coverage.causes if not exists.
             if not any(ccc == cause for ccc in child_coverage_causes):

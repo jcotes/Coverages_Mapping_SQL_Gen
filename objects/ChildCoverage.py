@@ -1,8 +1,6 @@
-from objects.Coverage import Coverage
+class ChildCoverage:
 
-
-class ChildCoverage(Coverage):
-
-    def __init__(self, clazz, line, desc, causes):
-        super().__init__(clazz, line, desc)
+    def __init__(self, coverage_desc, causes):
+        self.coverage_desc = coverage_desc
         self.causes = causes
+

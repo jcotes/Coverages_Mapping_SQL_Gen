@@ -3,9 +3,8 @@ import csv
 from utilities.CoveragesUtil import CoveragesUtil
 from utilities.QueryBuilder import QueryBuilder
 
-csv_filename = "dwellingfire.csv"
+csv_filename = "PCCoveragesFile.csv"
 migrate_script_name = "CMS-11817-New_Cov_Maps.sql"
-rollback_script_name = "CMS-11817-New_Cov_Maps_RB.sql"
 audit_id = "CMS-11819"
 
 def main():
