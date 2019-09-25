@@ -1,5 +1,6 @@
 import csv
 
+from objects.CauseOfLoss import CauseOfLoss
 from objects.ChildCoverage import ChildCoverage
 from objects.ParentCoverage import ParentCoverage
 
@@ -23,12 +24,12 @@ class CoveragesUtil:
             pc_coverage_code = csv_row["PC_COVERAGE_CODE"]
             parent_coverage_desc = csv_row["OLD_COVERAGE_NAME"]
             child_coverage_desc = csv_row["NEW_COVERAGE_NAME"]
-            cause = csv_row["CAUSE"]
+            cause = CauseOfLoss(csv_row["CAUSE"])
             child_coverage = ChildCoverage(child_coverage_desc, [cause])
             parent_coverage = ParentCoverage(pc_coverage_code, parent_coverage_desc, [child_coverage])
 
             # Add this cause to causes list if not exists
-            if not any(c == cause for c in causes):
+            if not any(c.cause_name == cause.cause_name for c in causes):
                 causes.append(cause)
 
             # Add this pc_coverage_code to coverages_object if not exists.
