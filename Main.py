@@ -3,9 +3,10 @@ import csv
 from utilities.CoveragesUtil import CoveragesUtil
 from utilities.QueryBuilder import QueryBuilder
 
-csv_filename = "PCCoveragesFile.csv"
-migrate_script_name = "CMS-11817-New_Cov_Maps.sql"
-audit_id = "CMS-11819"
+csv_filename = "CMS11869.csv"
+audit_id = "CMS-11869"
+migrate_script_name = "{}_BOP_COV_REMAP.sql".format(audit_id)
+
 
 def main():
     coverages_datastruct, causes = CoveragesUtil().load_coverages_datastruct(csv_filename)
