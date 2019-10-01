@@ -17,7 +17,6 @@ class QueryBuilder:
         sql_out_txt += "END;\n"
         return sql_out_txt
 
-
     @staticmethod
     def get_helper_variables_txt():
         helper_vars_txt = "\n\t-- Set up helper variables\n"
@@ -34,14 +33,13 @@ class QueryBuilder:
         col_select_section = '\t\t-- Define the cause of loss variables\n'
 
         for col in causes:
-            col_variable_section += "\t{0:40} ".format(col.cause_variable) + "CIGADMIN.CAUSE_OF_LOSS.CAUSE_OF_LOSS%TYPE;\n"
+            col_variable_section += "\t{0:40} ".format(
+                col.cause_variable) + "CIGADMIN.CAUSE_OF_LOSS.CAUSE_OF_LOSS%TYPE;\n"
             col_select_section += "\t\tSELECT CAUSE_OF_LOSS INTO " + col.cause_variable + " FROM CIGADMIN.CAUSE_OF_LOSS WHERE CAUSE_NAME " \
-                                                                                                     "= '" + col.cause_name + '\';\n'
+                                                                                          "= '" + col.cause_name + '\';\n'
         col_variable_section += "\n"
         col_select_section += "\n"
         return col_variable_section, col_select_section
-
-
 
     @staticmethod
     def build_coverage_remap_sections(coverages_object, audit_id):
@@ -64,16 +62,16 @@ class QueryBuilder:
 
                 for child_coverage in coverage.child_coverages:
                     remap_sections += "\t\tv_COV_IDX := CIGADMIN.SEQ_COVERAGE.nextval;\n\n"
-                    remap_sections += "\t\t------- Insert new COVERAGE '{}' USING VALUES FROM COVERAGE '{}' -------\n"\
+                    remap_sections += "\t\t------- Insert new COVERAGE '{}' USING VALUES FROM COVERAGE '{}' -------\n" \
                         .format(child_coverage.coverage_desc, coverage.coverage_desc)
                     remap_sections += QueryBuilder().insert_coverage(child_coverage.coverage_desc, audit_id)
 
-                    remap_sections += "\t\t-------- Insert new CMS_PC_COV_LINK for PC_COV_CODE {} --------\n"\
+                    remap_sections += "\t\t-------- Insert new CMS_PC_COV_LINK for PC_COV_CODE {} --------\n" \
                         .format(pc_coverage_code)
                     remap_sections += QueryBuilder().insert_pc_cov_link("v_COV_IDX", pc_coverage_code, audit_id)
 
                     for cause in child_coverage.causes:
-                        remap_sections += "\t\t------- Insert new CC_LINK for COVERAGE '{}' CAUSE_OF_LOSS '{}' -------\n"\
+                        remap_sections += "\t\t------- Insert new CC_LINK for COVERAGE '{}' CAUSE_OF_LOSS '{}' -------\n" \
                             .format(coverage.coverage_desc, cause.cause_name)
                         remap_sections += QueryBuilder().insert_cclink("V_COV_IDX", cause.cause_variable, audit_id)
 
@@ -114,43 +112,43 @@ class QueryBuilder:
         coverage_insert += "\t\t-- Insert the new coverage --\n"
         coverage_insert += "\t\tIF(v_EXISTS = 0) THEN\n" \
                            "\t\t\tINSERT INTO CIGADMIN.COVERAGE (COVERAGE, A_S_COVERAGE_LINE, CLASS, COVERAGE_DESC, CREATE_ID,\n" \
-                                      "\t\t\tFIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, QUICK_CLAIMS_VALID)\n"
+                           "\t\t\tFIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, QUICK_CLAIMS_VALID)\n"
         coverage_insert += "\t\t\tVALUES (\n" \
                            "\t\t\tv_COV_IDX,\n" \
-                          "\t\t\tv_COV_ROW.A_S_COVERAGE_LINE,\n" \
-                          "\t\t\tv_COV_ROW.CLASS,\n" \
-                          "\t\t\t'{}',\n" \
-                          "\t\t\t'CIGADMIN',\n" \
-                          "\t\t\tSYSDATE,\n" \
-                          "\t\t\t'{}',\n" \
-                          "\t\t\tSYSDATE,\n" \
+                           "\t\t\tv_COV_ROW.A_S_COVERAGE_LINE,\n" \
+                           "\t\t\tv_COV_ROW.CLASS,\n" \
+                           "\t\t\t'{}',\n" \
+                           "\t\t\t'CIGADMIN',\n" \
+                           "\t\t\tSYSDATE,\n" \
+                           "\t\t\t'{}',\n" \
+                           "\t\t\tSYSDATE,\n" \
                            "\t\t\tv_COV_ROW.QUICK_CLAIMS_VALID);\n" \
                            "\t\t\tv_INSERTED := v_INSERTED + SQL%ROWCOUNT;\n" \
-                           "\t\tEND IF;\n\n"\
+                           "\t\tEND IF;\n\n" \
             .format(child_coverage_desc, audit_id)
 
         return coverage_insert
 
     @staticmethod
     def insert_cclink(coverage_idx_var, cause_idx_var, audit_id):
-        return  "\t\t-- Check if CC_LINK exists --\n" \
-                "\t\tSELECT COUNT(*) INTO v_EXISTS FROM CIGADMIN.CC_LINK\n" \
-                "\t\tWHERE COVERAGE = {}\n" \
-                "\t\tAND CAUSE_OF_LOSS = {}\n" \
-                "\t\tAND AUDIT_ID = '{}';\n\n" \
-                "\t\t-- Insert CC_LINK --\n" \
-                "\t\tIF (v_EXISTS = 0) THEN\n" \
-                "\t\t\tINSERT INTO CIGADMIN.CC_LINK (CC_LINK, CAUSE_OF_LOSS, COVERAGE, CREATE_ID, FIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, EFFECTIVE_DATE, DEPRECATED_DATE)\n" \
-                "\t\t\tVALUES (\n" \
-                "\t\t\tCIGADMIN.SEQ_CC_LINK.nextval, \n" \
-                "\t\t\t{},\n" \
-                "\t\t\t{},\n" \
-                "\t\t\t'CIGADMIN',\n" \
-                "\t\t\tSYSDATE,\n" \
-                "\t\t\t'{}',\n" \
-                "\t\t\tSYSDATE,\n" \
-                "\t\t\tSYSDATE,\n" \
-                "\t\t\t'1-JAN-9999');\n" \
-                "\t\t\tv_INSERTED := v_INSERTED + SQL%ROWCOUNT;\n" \
-                "\t\tEND IF;\n\n".format(coverage_idx_var, cause_idx_var, audit_id, cause_idx_var, coverage_idx_var, audit_id)
-
+        return "\t\t-- Check if CC_LINK exists --\n" \
+               "\t\tSELECT COUNT(*) INTO v_EXISTS FROM CIGADMIN.CC_LINK\n" \
+               "\t\tWHERE COVERAGE = {}\n" \
+               "\t\tAND CAUSE_OF_LOSS = {}\n" \
+               "\t\tAND AUDIT_ID = '{}';\n\n" \
+               "\t\t-- Insert CC_LINK --\n" \
+               "\t\tIF (v_EXISTS = 0) THEN\n" \
+               "\t\t\tINSERT INTO CIGADMIN.CC_LINK (CC_LINK, CAUSE_OF_LOSS, COVERAGE, CREATE_ID, FIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, EFFECTIVE_DATE, DEPRECATED_DATE)\n" \
+               "\t\t\tVALUES (\n" \
+               "\t\t\tCIGADMIN.SEQ_CC_LINK.nextval, \n" \
+               "\t\t\t{},\n" \
+               "\t\t\t{},\n" \
+               "\t\t\t'CIGADMIN',\n" \
+               "\t\t\tSYSDATE,\n" \
+               "\t\t\t'{}',\n" \
+               "\t\t\tSYSDATE,\n" \
+               "\t\t\tSYSDATE,\n" \
+               "\t\t\t'1-JAN-9999');\n" \
+               "\t\t\tv_INSERTED := v_INSERTED + SQL%ROWCOUNT;\n" \
+               "\t\tEND IF;\n\n".format(coverage_idx_var, cause_idx_var, audit_id, cause_idx_var, coverage_idx_var,
+                                        audit_id)

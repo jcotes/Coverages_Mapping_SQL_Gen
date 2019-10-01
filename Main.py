@@ -3,7 +3,7 @@ import csv
 from utilities.CoveragesUtil import CoveragesUtil
 from utilities.QueryBuilder import QueryBuilder
 
-csv_filename = "CMS11869.csv"
+csv_filename = "CMS-11869.csv"
 audit_id = "CMS-11869"
 migrate_script_name = "{}_BOP_COV_REMAP.sql".format(audit_id)
 
