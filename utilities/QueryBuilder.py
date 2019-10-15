@@ -99,55 +99,35 @@ class QueryBuilder:
 
     @staticmethod
     def insert_new_coverage(coverage, audit_id):
-        return "\t\t\t-- Check if new coverage '{}' has already been added to CIGADMIN.COVERAGE table\n" \
-               "\t\t\tSELECT COUNT(*) INTO v_EXISTS FROM CIGADMIN.COVERAGE\n" \
-               "\t\t\t\tWHERE COVERAGE_DESC = '{}'\n " \
-               "\t\t\t\tAND AUDIT_ID = '{}';\n" \
-                "\t\t\t-- If new coverage '{}' doesn't exist, insert into CIGADMIN.COVERAGE\n" \
-                "\t\t\tIF (v_EXISTS = 0) THEN\n" \
-                "\t\t\t\tINSERT INTO CIGADMIN.COVERAGE (COVERAGE, A_S_COVERAGE_LINE, CLASS, COVERAGE_DESC, " \
+        return "\t\t\tINSERT INTO CIGADMIN.COVERAGE (COVERAGE, A_S_COVERAGE_LINE, CLASS, COVERAGE_DESC, " \
                 "CREATE_ID, FIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, QUICK_CLAIMS_VALID)\n" \
-                "\t\t\t\tVALUES(v_COV_IDX, v_OLD_COVERAGE.A_S_COVERAGE_LINE, v_OLD_COVERAGE.CLASS, " \
+                "\t\t\tVALUES(v_COV_IDX, v_OLD_COVERAGE.A_S_COVERAGE_LINE, v_OLD_COVERAGE.CLASS, " \
                 "'{}', 'CIGADMIN', SYSDATE, '{}', SYSDATE, v_OLD_COVERAGE.QUICK_CLAIMS_VALID);\n" \
-                "\t\t\t\tv_COVERAGES_INSERTED := v_COVERAGES_INSERTED + SQL%ROWCOUNT;\n" \
-                "\t\t\tEND IF;\n".format(coverage.desc, coverage.desc, audit_id, coverage.desc, coverage.desc, audit_id)
+                "\t\t\tv_COVERAGES_INSERTED := v_COVERAGES_INSERTED + SQL%ROWCOUNT;\n\n" \
+                .format(coverage.desc, audit_id)
 
 
     @staticmethod
     def insert_new_coverage_map(business_line, parent_coverage_idx_var, child_coverage_idx_var, audit_id):
-        return "\n\t\t\t-- Check if new new coverage map is has already been added to CIGADMIN.CMS_COV_COV_MAP\n" \
-               "\t\t\tSELECT COUNT(*) INTO v_EXISTS FROM CIGADMIN.CMS_COV_COV_MAP\n" \
-               "\t\t\t\tWHERE OLD_COVERAGE = {}\n " \
-               "\t\t\t\tAND NEW_COVERAGE = {}\n" \
-               "\t\t\t\tAND AUDIT_ID = '{}';\n" \
-               "\t\t\t-- If COV MAP doesn't exist for new coverage, insert into CIGADMIN.CMS_COV_COV_MAP\n" \
-                "\t\t\tIF (v_EXISTS = 0) THEN\n" \
-               "\t\t\t\tINSERT INTO CIGADMIN.CMS_COV_COV_MAP (BUSINESS_LINE, OLD_COVERAGE, NEW_COVERAGE, EFFECTIVE_DATE, CREATE_ID, " \
+        return "\t\t\tINSERT INTO CIGADMIN.CMS_COV_COV_MAP (BUSINESS_LINE, OLD_COVERAGE, NEW_COVERAGE, EFFECTIVE_DATE, CREATE_ID, " \
                "FIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, DEPRECATED_DATE)\n" \
-               "\t\t\t\tVALUES ('{}', {}, {}, SYSDATE, 'CIGADMIN', SYSDATE, '{}', " \
+               "\t\t\tVALUES ('{}', {}, {}, SYSDATE, 'CIGADMIN', SYSDATE, '{}', " \
                "SYSDATE, to_date('9999-01-01', 'yyyy-mm-dd'));\n" \
-               "\t\t\t\tv_COV_MAP_INSERTED := v_COV_MAP_INSERTED + SQL%ROWCOUNT;\n" \
-               "\t\t\tEND IF;\n".format(parent_coverage_idx_var, child_coverage_idx_var, audit_id, business_line, parent_coverage_idx_var, child_coverage_idx_var, audit_id)
+               "\t\t\tv_COV_MAP_INSERTED := v_COV_MAP_INSERTED + SQL%ROWCOUNT;\n" \
+                .format(business_line, parent_coverage_idx_var, child_coverage_idx_var, audit_id)
 
     @staticmethod
     def insert_cclink(coverage_idx_var, cause_idx_var, audit_id):
-        return  "\n\t\t\t-- Check if CIGADMIN.CC_LINK exists for the COVERAGE -> CAUSE_OF_LOSS\n" \
-                "\t\t\tSELECT COUNT(*) INTO v_EXISTS FROM CIGADMIN.CC_LINK\n" \
-                "\t\t\t\tWHERE COVERAGE = {}\n" \
-                "\t\t\t\tAND CAUSE_OF_LOSS = {}\n" \
-                "\t\t\t\tAND AUDIT_ID = '{}';\n" \
-                "\t\t\t-- If CC_LINK doesn't exist for COVERAGE -> CAUSE_OF_LOSS, insert into CIGADMIN.CC_LINK\n" \
-                "\t\t\tIF (v_EXISTS = 0) THEN\n" \
-                "\t\t\t\tINSERT INTO CIGADMIN.CC_LINK (CC_LINK, CAUSE_OF_LOSS, COVERAGE, CREATE_ID, FIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, EFFECTIVE_DATE, DEPRECATED_DATE)\n" \
-                "\t\t\t\tVALUES (CIGADMIN.SEQ_CC_LINK.nextval, \n" \
-                "\t\t\t\t{},\n" \
-                "\t\t\t\t{},\n" \
-                "\t\t\t\t'CIGADMIN',\n" \
-                "\t\t\t\tSYSDATE,\n" \
-                "\t\t\t\t'CMS-11860',\n" \
-                "\t\t\t\tSYSDATE,\n" \
-                "\t\t\t\tSYSDATE,\n" \
-                "\t\t\t\t'1-JAN-9999'\n\t\t\t\t);\n" \
-                "\t\t\t\tv_CCLINK_INSERTED := v_CCLINK_INSERTED + SQL%ROWCOUNT;\n" \
-                "\t\t\tEND IF;\n".format(coverage_idx_var, cause_idx_var, audit_id, cause_idx_var, coverage_idx_var)
+        return  "\t\t\tINSERT INTO CIGADMIN.CC_LINK (CC_LINK, CAUSE_OF_LOSS, COVERAGE, CREATE_ID, FIRST_MODIFIED, AUDIT_ID, LAST_MODIFIED, EFFECTIVE_DATE, DEPRECATED_DATE)\n" \
+                "\t\t\tVALUES (CIGADMIN.SEQ_CC_LINK.nextval, \n" \
+                "\t\t\t{},\n" \
+                "\t\t\t{},\n" \
+                "\t\t\t'CIGADMIN',\n" \
+                "\t\t\tSYSDATE,\n" \
+                "\t\t\t'CMS-11860',\n" \
+                "\t\t\tSYSDATE,\n" \
+                "\t\t\tSYSDATE,\n" \
+                "\t\t\t'1-JAN-9999'\n\t\t\t\t);\n" \
+                "\t\t\tv_CCLINK_INSERTED := v_CCLINK_INSERTED + SQL%ROWCOUNT;\n\n" \
+                 .format(cause_idx_var, coverage_idx_var)
 
