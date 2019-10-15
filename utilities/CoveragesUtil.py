@@ -22,8 +22,8 @@ class CoveragesUtil:
         for csv_row in csv_reader:
 
             pc_coverage_code = csv_row["PC_COVERAGE_CODE"]
-            parent_coverage_desc = csv_row["OLD_COVERAGE_NAME"]
-            child_coverage_desc = csv_row["NEW_COVERAGE_NAME"]
+            parent_coverage_desc = csv_row["OLD_COVERAGE_NAME"].replace('&', '\' || CHR(38) || \'')
+            child_coverage_desc = csv_row["NEW_COVERAGE_NAME"].replace('&', '\' || CHR(38) || \'')
             cause = CauseOfLoss(csv_row["CAUSE"])
             child_coverage = ChildCoverage(child_coverage_desc, [cause])
             parent_coverage = ParentCoverage(pc_coverage_code, parent_coverage_desc, [child_coverage])

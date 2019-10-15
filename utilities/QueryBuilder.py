@@ -54,6 +54,13 @@ class QueryBuilder:
                                   "\t\tWHERE PC_COVERAGE_CODE = '{}'\n" \
                                   "\t\tAND ROWNUM = 1;\n\n".format(pc_coverage_code)
 
+                remap_sections += "\t\t------- Deprecate the existing PC_COVERAGE_CODE -------\n" \
+                                  "\t\tUPDATE CIGADMIN.CMS_PC_COV_LINK\n" \
+                                  "\t\tSET DEPRECATED_DATE = SYSDATE\n" \
+                                  "\t\tWHERE CMS_PC_COV_LINK = v_CPCL_ROW.CMS_PC_COV_LINK;\n\n"
+
+
+
                 remap_sections += "\t\t------- Get the COVERAGE row mapped from {} -------\n".format(pc_coverage_code)
                 remap_sections += "\t\tSELECT *\n" \
                                   "\t\tINTO v_COV_ROW\n" \
@@ -96,7 +103,7 @@ class QueryBuilder:
                            "\t\t\t'{}',\n" \
                            "\t\t\tSYSDATE,\n" \
                            "\t\t\tSYSDATE,\n" \
-                           "\t\t\t'1-JAN-2019');\n" \
+                           "\t\t\t'1-JAN-9999');\n" \
                            "\t\t\tv_INSERTED := v_INSERTED + SQL%ROWCOUNT;\n" \
                            "\t\tEND IF;\n\n" \
             .format(coverage_var, pc_cov_code, audit_id)
