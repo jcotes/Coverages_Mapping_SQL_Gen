@@ -124,10 +124,10 @@ class QueryBuilder:
                 "\t\t\t{},\n" \
                 "\t\t\t'CIGADMIN',\n" \
                 "\t\t\tSYSDATE,\n" \
-                "\t\t\t'CMS-11860',\n" \
+                "\t\t\t'{}',\n" \
                 "\t\t\tSYSDATE,\n" \
                 "\t\t\tSYSDATE,\n" \
                 "\t\t\t'1-JAN-9999'\n\t\t\t\t);\n" \
                 "\t\t\tv_CCLINK_INSERTED := v_CCLINK_INSERTED + SQL%ROWCOUNT;\n\n" \
-                 .format(cause_idx_var, coverage_idx_var)
+                 .format(cause_idx_var, coverage_idx_var, audit_id)
 
