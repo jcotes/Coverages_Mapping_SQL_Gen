@@ -29,6 +29,7 @@ class QueryBuilder:
         helper_vars_txt = "\n\t\t-- Set up helper variables\n"
         helper_vars_txt += "\t\tv_OLD_COVERAGE CIGADMIN.COVERAGE%ROWTYPE;\n"
         helper_vars_txt += "\t\tv_EXISTS NUMBER := 0;\n"
+        helper_vars_txt += "\t\tv_EXISTING_COV CIGADMIN.COVERAGE.COVERAGE%TYPE;\n"
         helper_vars_txt += "\t\tv_COVERAGES_INSERTED NUMBER := 0;\n"
         helper_vars_txt += "\t\tv_COV_MAP_INSERTED NUMBER := 0;\n"
         helper_vars_txt += "\t\tv_CCLINK_INSERTED NUMBER := 0;\n"
@@ -81,9 +82,16 @@ class QueryBuilder:
 
                 for child_coverage in coverage.child_coverages:
                     coverages_loops += "\n\t\t\t------------------------- INSERTING NEW CHILD COVERAGE ----------------------\n\n"
-                    coverages_loops += QueryBuilder().insert_new_coverage(child_coverage, audit_id)
 
-                    coverages_loops += QueryBuilder().insert_new_coverage_map(lob, "v_OLD_COVERAGE.COVERAGE", "v_COV_IDX", audit_id)
+                    coverages_loops += "\t\t\tSELECT COUNT(*) INTO v_EXISTS FROM CIGADMIN.COVERAGE cov\n" \
+                                       "\t\t\tJOIN CIGADMIN.A_S_COVERAGE_LINE ascll ON ascll.COVERAGE = cov.COVERAGE\n" \
+                                       "\t\t\tWHERE cov.COVERAGE_DESC = '{}' AND ascll.LINE_NBR = '{}'\n\n".format(child_coverage.desc, child_coverage.line)
+                    coverages_loops += "\t\t\tIF v_EXISTS = 0 THEN\n" \
+                                       "{}{}\n".format(QueryBuilder().insert_new_coverage(child_coverage, audit_id),
+                                                           QueryBuilder().insert_new_coverage_map(lob, "v_OLD_COVERAGE.COVERAGE", "v_COV_IDX", audit_id))
+                    coverages_loops += "\t\t\tELSE\n" \
+                                       "\t\t\t\tRAISE VALUE_ERROR;\n"
+                    coverages_loops += "\t\t\tEND IF;"
 
                     coverages_loops += "\n\t\t\t ------------------------ INSERTING COLs FOR CHILD COVERAGE ------------------------\n"
                     for cause in child_coverage.causes:
